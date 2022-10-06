@@ -1,39 +1,43 @@
 import csv
+import pandas as pd
 
 
 def read_xml():
     # Use a breakpoint in the code line below to debug your script.
     from bs4 import BeautifulSoup
 
-    element_array = []
+    name_list = []
+    description_list = []
 
     # Opens mimosa xsd file
     with open("standards_files/mimosa_standards.xsd") as fp:
         soup = BeautifulSoup(fp, "xml")
 
-    # Adds element names to array
-    for element_name in soup.find_all('xs:element'):
-        element_array.append(element_name['name'])
+    # Finds concept names in xml file
+    for concept_name in soup.find_all("complexType", {'name': True}):
+        if concept_name is not None:
+            name_list.append(concept_name['name'])
 
     # Removes duplicates from array
-    element_array = list(dict.fromkeys(element_array))
-    print(element_array)
+    name_list = list(dict.fromkeys(name_list))
+    print(name_list)
 
     # Prints name and description of every complexType from xsd file
-    for stored_name in element_array:
+    for stored_name in name_list:
         for complex_type in soup.find_all('xs:complexType', {'name': stored_name}):
-            print(complex_type['name'])
             complex_description = complex_type.find('xs:documentation')
             if complex_description is not None:
                 description_value = complex_description.get_text()
-                print(description_value, '\n')
+                description_list.append(description_value)
             else:
-                print('N/A \n')
+                description_list.append('N/A')
 
-    with open('extracted_data.csv', 'w') as f:
-         headers = [string['name'] for tag in complex_type]
-         writer = csv.DictWriter(f, fieldnames=headers)
-         writer.writeheader()
+    print(description_list)
+    print(name_list)
+
+    csv_list = {'name': name_list, 'description': description_list}
+    df = pd.DataFrame(csv_list)
+    df.to_csv('Data/extracted_concepts.csv')
 
 
 # Press the green button in the gutter to run the script.
