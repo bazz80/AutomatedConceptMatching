@@ -72,7 +72,7 @@ def read_plcs_xml(engine):
     # Removes duplicates from list.
     name_list = list(dict.fromkeys(name_list))
 
-    # Finds and appends concept description to list
+    # Finds and appends concept description to list.
     for stored_name in name_list:
         list_length = len(name_list)
         for complex_type in soup.find_all('xsd:complexType', {'name': stored_name}):
