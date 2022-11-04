@@ -1,6 +1,7 @@
+import sqlalchemy
 from bs4 import BeautifulSoup
 import pandas as pd
-from sqlalchemy import create_engine
+import sqlalchemy as db
 from fuzzywuzzy import fuzz
 
 
@@ -47,9 +48,8 @@ def read_mimosa_xml(engine):
     # Write name and description to df
     csv_list = {'idMimosa': id_list, 'name': name_list, 'description': description_list, 'relationships': 'test'}
     mimosa_df = pd.DataFrame(csv_list)
-    mimosa_df.to_csv('Data/test_concepts.csv', sep='\t')
+    mimosa_df.to_sql('mimosa', con=engine, if_exists='replace', chunksize=1000, index=False)
 
-    # mimosa_df.to_sql('mimosa', con=engine, if_exists='append', chunksize=1000, index=False)
     return mimosa_df
 
 
@@ -90,18 +90,51 @@ def read_plcs_xml(engine):
     # Write name and description to df
     df_list = {'idPLCS': id_list, 'name': name_list, 'description': description_list, 'relationships': 'test'}
     plcs_df = pd.DataFrame(df_list)
-    plcs_df.to_csv('Data/test_plcs.csv', sep='\t')
+    plcs_df.to_sql('plcs', con=engine, if_exists='replace', chunksize=1000, index=False)
 
-    # plcs_df.to_sql('plcs', con=engine, if_exists='append', chunksize=1000, index=False)
     return plcs_df
 
 
 def connect_to_db():
+    meta = db.MetaData()
     # create sqlalchemy engine
-    engine = create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
+    engine = db.create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
                            .format(user="root",
                                    pw="alanna1",
                                    db="automatedmatching"))
+
+    mimosa = db.Table(
+        'mimosa',
+        meta,
+        db.Column('id_mimosa', db.Integer, primary_key=True),
+        db.Column('name', db.String(256)),
+        db.Column('description', db.String(5000)),
+        db.Column('relationships', db.String(5000)),
+    )
+
+    plcs = db.Table(
+        'plcs',
+        meta,
+        db.Column('id_plcs', db.Integer, primary_key = True),
+        db.Column('name', db.String(256)),
+        db.Column('description', db.String(5000)),
+        db.Column('relationships', db.String(5000)),
+    )
+    meta.create_all(engine)
+
+    similarity = db.Table(
+        'similarity',
+        meta,
+        db.Column('id_sim', db.Integer, primary_key=True),
+        db.Column('name_plcs', db.String(256)),
+        db.Column('name_mimosa', db.String(256)),
+        db.Column('sim_name', db.Integer),
+        db.Column('sim_description', db.Integer),
+        db.Column('sim_relationship', db.Integer),
+    )
+
+    meta.create_all(engine)
+    print("Tables were created")
     return engine
 
 
@@ -126,7 +159,7 @@ def name_match(dfm, dfp):
                 id_list.append(i)
 
 
-    df_list = {'idSIM': id_list, 'id_plcs': plist, 'id_mimosa': mlist, 'sim_name': slist}
+    df_list = {'id_sim': id_list, 'name_plcs': plist, 'name_mimosa': mlist, 'sim_name': slist}
     sim_df = pd.DataFrame(df_list)
     return sim_df
 
@@ -144,11 +177,12 @@ def description_matching(dfm, dfp, df):
                 s_description.append(similarity)
 
     df2 = df.assign(sim_description=s_description)
-    df2.to_sql('similarity', con=engine, if_exists='append', chunksize=1000, index=False)
+    df2.to_sql('similarity', con=engine, if_exists='replace', chunksize=1000, index=False)
     return df2
+
 
 engine = connect_to_db()
 mimosa_df = read_mimosa_xml(engine)
 plcs_df = read_plcs_xml(engine)
 sim_df = name_match(mimosa_df, plcs_df)
-description_matching(mimosa_df, plcs_df, sim_df)
+df2 = description_matching(mimosa_df, plcs_df, sim_df)
