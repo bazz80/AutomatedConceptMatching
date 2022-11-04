@@ -69,7 +69,7 @@ def read_plcs_xml(engine):
         if concept_name is not None:
             name_list.append(concept_name['name'])
 
-    # Removes duplicates from list
+    # Removes duplicates from list.
     name_list = list(dict.fromkeys(name_list))
 
     # Finds and appends concept description to list
