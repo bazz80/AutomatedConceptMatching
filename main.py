@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import sqlalchemy as db
 from fuzzywuzzy import fuzz
+import configparser as cp
 
 
 def read_mimosa_xml(engine):
@@ -96,6 +97,26 @@ def read_plcs_xml(engine):
 
 
 def connect_to_db():
+    # read_default_group = 'client'
+    # read_default_file = '/etc/my.cnf'
+    #
+    # cfg = cp.Parser()
+    # cfg.read(defaults_file)
+    #
+    # def _config(key, arg=None):
+    #     try:
+    #         return cfg.get(read_default_group, key)
+    #     except Exception:
+    #         return arg
+    #
+    # user = _config("user")
+    # password = _config("password")
+    # host = _config("host")
+    # database = _config("database")
+    # port = int(_config("port", 3306))
+    # charset = _config("charset", "utf8mb4")
+    # engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:{port}/{database}?charset={charset}')
+
     meta = db.MetaData()
     # create sqlalchemy engine
     engine = db.create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
