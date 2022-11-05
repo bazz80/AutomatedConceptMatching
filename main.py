@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import sqlalchemy as db
 from fuzzywuzzy import fuzz
-import configparser as cp
 
 
 def read_mimosa_xml(engine):
@@ -33,6 +32,7 @@ def read_mimosa_xml(engine):
                 description_value = complex_description.get_text()
                 description_list.append(description_value)
             else:
+                #append concept name to missing description
                 description_list.append('N/A')
 
     for stored_name in name_list:
@@ -44,7 +44,6 @@ def read_mimosa_xml(engine):
         while i <= list_length:
             id_list.append(i)
             i += 1
-
 
     # Write name and description to df
     csv_list = {'idMimosa': id_list, 'name': name_list, 'description': description_list, 'relationships': 'test'}
@@ -87,7 +86,6 @@ def read_plcs_xml(engine):
             id_list.append(i)
             i += 1
 
-
     # Write name and description to df
     df_list = {'idPLCS': id_list, 'name': name_list, 'description': description_list, 'relationships': 'test'}
     plcs_df = pd.DataFrame(df_list)
@@ -97,26 +95,6 @@ def read_plcs_xml(engine):
 
 
 def connect_to_db():
-    # read_default_group = 'client'
-    # read_default_file = '/etc/my.cnf'
-    #
-    # cfg = cp.Parser()
-    # cfg.read(defaults_file)
-    #
-    # def _config(key, arg=None):
-    #     try:
-    #         return cfg.get(read_default_group, key)
-    #     except Exception:
-    #         return arg
-    #
-    # user = _config("user")
-    # password = _config("password")
-    # host = _config("host")
-    # database = _config("database")
-    # port = int(_config("port", 3306))
-    # charset = _config("charset", "utf8mb4")
-    # engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}:{port}/{database}?charset={charset}')
-
     meta = db.MetaData()
     # create sqlalchemy engine
     engine = db.create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
@@ -141,7 +119,6 @@ def connect_to_db():
         db.Column('description', db.String(5000)),
         db.Column('relationships', db.String(5000)),
     )
-    meta.create_all(engine)
 
     similarity = db.Table(
         'similarity',
@@ -165,24 +142,24 @@ def name_match(dfm, dfp):
     plist = []
     slist = []
     id_list = []
-    i = 0
+    unique_id = 0
 
-    test = dfp['name'].values.tolist()
-    test2 = dfm['name'].values.tolist()
-    for potential in test:
-        for example in test2:
-            similarity = fuzz.ratio(example, potential)
-            if similarity >= threshold:
-                mlist.append(example)
-                plist.append(potential)
-                slist.append(similarity)
-                i += 1
-                id_list.append(i)
-
+    plcs_name_list = dfp['name'].values.tolist()
+    mimosa_name_list = dfm['name'].values.tolist()
+    for name_compare_plcs in plcs_name_list:
+        for name_compare_mimosa in mimosa_name_list:
+            similarity_score = fuzz.token_set_ratio(name_compare_mimosa, name_compare_plcs)
+            if similarity_score >= threshold:
+                mlist.append(name_compare_mimosa)
+                plist.append(name_compare_plcs)
+                slist.append(similarity_score)
+                unique_id += 1
+                id_list.append(unique_id)
 
     df_list = {'id_sim': id_list, 'name_plcs': plist, 'name_mimosa': mlist, 'sim_name': slist}
     sim_df = pd.DataFrame(df_list)
     return sim_df
+
 
 def description_matching(dfm, dfp, df):
     s_description = []
@@ -192,7 +169,7 @@ def description_matching(dfm, dfp, df):
     for potential in test:
         for example in test2:
             if example == 'N/A':
-                s_description.append('0')
+                s_description.append(0)
             else:
                 similarity = fuzz.ratio(example, potential)
                 s_description.append(similarity)
@@ -207,3 +184,4 @@ mimosa_df = read_mimosa_xml(engine)
 plcs_df = read_plcs_xml(engine)
 sim_df = name_match(mimosa_df, plcs_df)
 df2 = description_matching(mimosa_df, plcs_df, sim_df)
+
