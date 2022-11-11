@@ -1,11 +1,9 @@
 from configparser import ConfigParser
 
-import numpy as np
-import sqlalchemy
 from bs4 import BeautifulSoup
 import pandas as pd
 import sqlalchemy as db
-from fuzzywuzzy import fuzz, process
+from fuzzywuzzy import fuzz
 
 
 def read_mimosa_xml(engine):
@@ -184,8 +182,6 @@ def name_match(dfm, dfp):
 
 def description_matching(dfm, dfp, df):
     s_description = []
-    mimosa_matching_description = []
-    plcs_matching_description = []
 
     test = dfp['description'].values.tolist()
     test2 = dfm['description'].values.tolist()
