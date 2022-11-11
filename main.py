@@ -1,3 +1,6 @@
+from configparser import ConfigParser
+
+import numpy as np
 import sqlalchemy
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -113,11 +116,11 @@ def read_plcs_xml(engine):
 
 def connect_to_db():
     meta = db.MetaData()
-    # create sqlalchemy engine
+    user_info = config_object["SQLSERVERCONFIG"]
     engine = db.create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
-                           .format(user="root",
-                                   pw="alanna1",
-                                   db="automatedmatching"))
+                           .format(user=format(user_info["user"]),
+                                   pw=format(user_info["password"]),
+                                   db=format(user_info["database"])))
     print('----Connected to DB----')
 
     mimosa = db.Table(
@@ -132,7 +135,7 @@ def connect_to_db():
     plcs = db.Table(
         'plcs',
         meta,
-        db.Column('id_plcs', db.Integer, primary_key = True),
+        db.Column('id_plcs', db.Integer, primary_key=True),
         db.Column('name', db.String(256)),
         db.Column('description', db.String(5000)),
         db.Column('relationships', db.String(5000)),
@@ -204,10 +207,9 @@ def relationship_matching(dfm, dfp, df2):
     test2 = dfm['relationships'].values.tolist()
     test3 = [w.replace('N/A', '') for w in test]
     test4 = [w.replace('N/A', '') for w in test2]
-    print(test3)
     for potential in test3:
         for example in test4:
-            similarity = fuzz.token_sort_ratio(example, potential)
+            similarity = fuzz.token_set_ratio(example, potential)
             t1_simlist.append(similarity)
 
     df3 = df2.assign(sim_relationships=t1_simlist)
@@ -215,6 +217,38 @@ def relationship_matching(dfm, dfp, df2):
     print('----relationships done----')
     return df3
 
+def createConfig():
+    # Get the configparser object
+    config_object = ConfigParser()
+
+    # Assume we need 2 sections in the config file, let's call them USERINFO and SERVERCONFIG
+    config_object["THRESHOLDANDWEIGHTING"] = {
+        "Threshold": "40",
+        "Name Weighting": "65",
+        "Description Weighting": "23",
+        "Relationship Weighting": "12"
+    }
+
+    config_object["SQLSERVERCONFIG"] = {
+        "User": "root",
+        "Password": "alanna1",
+        "Database": "automatedmatching"
+    }
+
+    # Write the above sections to config.ini file
+    with open('config.ini', 'w') as conf:
+        config_object.write(conf)
+
+    # Read config.ini file
+    config_object = ConfigParser()
+    config_object.read("config.ini")
+
+    return config_object
+
+# def weighting(df3):
+#     user_info = config_object["THRESHOLDANDWEIGHTING"]
+#     df3['weighted_similarity'] = np.where(df3['sim_name'] / 65 * 100 + df3['sim_description'] / 23 * 100 + df3['sim_relationships'] / 12 * 100)
+#     print(df3)
 
 # def weighting(df2):
 #     name_weighting = 80
@@ -236,11 +270,13 @@ def relationship_matching(dfm, dfp, df2):
 #     # df5 = df3[(df3[['weighted_similarity']] >= threshold).all(axis=1)]
 #     print(df3)
 
+
+config_object = createConfig()
 engine = connect_to_db()
 mimosa_df = read_mimosa_xml(engine)
 plcs_df = read_plcs_xml(engine)
 sim_df = name_match(mimosa_df, plcs_df)
 df2 = description_matching(mimosa_df, plcs_df, sim_df)
 df3 = relationship_matching(mimosa_df, plcs_df, df2)
-# weighting(df2)
+weighting(df3)
 
