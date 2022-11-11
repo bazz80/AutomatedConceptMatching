@@ -2,7 +2,7 @@ import sqlalchemy
 from bs4 import BeautifulSoup
 import pandas as pd
 import sqlalchemy as db
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import fuzz, process
 
 
 def read_mimosa_xml(engine):
@@ -12,11 +12,9 @@ def read_mimosa_xml(engine):
     relationship_list = []
     id_list = []
 
-    # Opens mimosa xsd file
     with open("standards_files/mimosa_standards.xsd") as fp:
         soup = BeautifulSoup(fp, "xml")
 
-    # Finds concept names in xml file
     for concept_name in soup.find_all("complexType", {'name': True}):
         if concept_name is not None:
             name_list.append(concept_name['name'])
@@ -39,16 +37,23 @@ def read_mimosa_xml(engine):
         list_length = len(name_list)
         for complex_type in soup.find_all('xs:complexType', {'name': stored_name}):
             headers = [tag['type'] for tag in complex_type.find_all("xs:element", {'type': True})]
-            relationship_list.append(headers)
+            if not headers:
+                relationship_list.append(['N/A'])
+            else:
+                relationship_list.append(headers)
+
+        list2 = [x for x in relationship_list if x != []]
 
         while i <= list_length:
             id_list.append(i)
             i += 1
 
     # Write name and description to df
-    csv_list = {'idMimosa': id_list, 'name': name_list, 'description': description_list, 'relationships': 'test'}
+    csv_list = {'idMimosa': id_list, 'name': name_list, 'description': description_list, 'relationships': list2}
     mimosa_df = pd.DataFrame(csv_list)
+    mimosa_df['relationships'] = mimosa_df['relationships'].str.join(', ')
     mimosa_df.to_sql('mimosa', con=engine, if_exists='replace', chunksize=1000, index=False)
+    print('----mimosa table created----')
 
     return mimosa_df
 
@@ -58,6 +63,7 @@ def read_plcs_xml(engine):
     id_list = []
     name_list = []
     description_list = []
+    relationship_list = []
 
     # Opens mimosa xsd file
     with open("standards_files/plcs_standards.xsd") as fp:
@@ -82,14 +88,25 @@ def read_plcs_xml(engine):
             else:
                 description_list.append('N/A')
 
+        for complex_type in soup.find_all('xsd:complexType', {'name': stored_name}):
+            headers = [tag['type'] for tag in complex_type.find_all("xsd:element", {'type': True})]
+            if not headers:
+                relationship_list.append(['N/A'])
+            else:
+                relationship_list.append(headers)
+
+            list2 = [x for x in relationship_list if x != []]
+
         while i <= list_length:
             id_list.append(i)
             i += 1
 
     # Write name and description to df
-    df_list = {'idPLCS': id_list, 'name': name_list, 'description': description_list, 'relationships': 'test'}
+    df_list = {'idPLCS': id_list, 'name': name_list, 'description': description_list, 'relationships': list2}
     plcs_df = pd.DataFrame(df_list)
+    plcs_df['relationships'] = plcs_df['relationships'].str.join(', ')
     plcs_df.to_sql('plcs', con=engine, if_exists='replace', chunksize=1000, index=False)
+    print('----plcs table created----')
 
     return plcs_df
 
@@ -101,6 +118,7 @@ def connect_to_db():
                            .format(user="root",
                                    pw="alanna1",
                                    db="automatedmatching"))
+    print('----Connected to DB----')
 
     mimosa = db.Table(
         'mimosa',
@@ -175,13 +193,54 @@ def description_matching(dfm, dfp, df):
                 s_description.append(similarity)
 
     df2 = df.assign(sim_description=s_description)
-    df2.to_sql('similarity', con=engine, if_exists='replace', chunksize=1000, index=False)
+    print('----description done----')
     return df2
 
+
+def relationship_matching(dfm, dfp, df2):
+    t1_simlist = []
+
+    test = dfp['relationships'].values.tolist()
+    test2 = dfm['relationships'].values.tolist()
+    test3 = [w.replace('N/A', '') for w in test]
+    test4 = [w.replace('N/A', '') for w in test2]
+    print(test3)
+    for potential in test3:
+        for example in test4:
+            similarity = fuzz.token_sort_ratio(example, potential)
+            t1_simlist.append(similarity)
+
+    df3 = df2.assign(sim_relationships=t1_simlist)
+    df3.to_sql('similarity', con=engine, if_exists='replace', chunksize=1000, index=False)
+    print('----relationships done----')
+    return df3
+
+
+# def weighting(df2):
+#     name_weighting = 80
+#     description_weighting = 20
+#     d_list = []
+#     threshold = 40
+#     df_list = df2['name_plcs'].values.tolist()
+#
+#     if name_weighting + description_weighting == 100:
+#         print(df2)
+#         for row in df2.itertuples():
+#             weighted_sim = (df2['sim_name'] / 100) * name_weighting
+#             weighted_description = (df2['sim_description'] / 100) * description_weighting
+#             weighted_similarity = weighted_sim + weighted_description
+#             d_list.append(weighted_similarity)
+#
+#     print('here')
+#     df3 = df2.assign(weighted_similarity=d_list)
+#     # df5 = df3[(df3[['weighted_similarity']] >= threshold).all(axis=1)]
+#     print(df3)
 
 engine = connect_to_db()
 mimosa_df = read_mimosa_xml(engine)
 plcs_df = read_plcs_xml(engine)
 sim_df = name_match(mimosa_df, plcs_df)
 df2 = description_matching(mimosa_df, plcs_df, sim_df)
+df3 = relationship_matching(mimosa_df, plcs_df, df2)
+# weighting(df2)
 
