@@ -184,6 +184,8 @@ def name_match(dfm, dfp):
 
 def description_matching(dfm, dfp, df):
     s_description = []
+    mimosa_matching_description = []
+    plcs_matching_description = []
 
     test = dfp['description'].values.tolist()
     test2 = dfm['description'].values.tolist()
@@ -194,8 +196,10 @@ def description_matching(dfm, dfp, df):
             else:
                 similarity = fuzz.ratio(example, potential)
                 s_description.append(similarity)
+                mimosa_matching_description.apped(example)
+                plcs_matching_description.append(potential)
 
-    df2 = df.assign(sim_description=s_description)
+    df2 = df.assign(sim_description=s_description, mimosa_description=mimosa_matching_description, plcs_description=plcs_matching_description)
     print('----description done----')
     return df2
 
@@ -245,10 +249,14 @@ def createConfig():
 
     return config_object
 
-# def weighting(df3):
-#     user_info = config_object["THRESHOLDANDWEIGHTING"]
-#     df3['weighted_similarity'] = np.where(df3['sim_name'] / 65 * 100 + df3['sim_description'] / 23 * 100 + df3['sim_relationships'] / 12 * 100)
-#     print(df3)
+def weighting(df3):
+    user_info = config_object["THRESHOLDANDWEIGHTING"]
+    name_weighting = float(user_info["name weighting"])
+    description_weighting = float(user_info["description weighting"])
+    relationship_weighting = float(user_info["relationship weighting"])
+
+    df3["weighted_similarity"] = df3["sim_name"] * name_weighting / 100 + df3["sim_description"] * description_weighting / 100 + df3["sim_relationships"] * relationship_weighting /100
+    df3.to_sql('similarity', con=engine, if_exists='replace', chunksize=1000, index=False)
 
 # def weighting(df2):
 #     name_weighting = 80
