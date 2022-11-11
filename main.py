@@ -196,10 +196,8 @@ def description_matching(dfm, dfp, df):
             else:
                 similarity = fuzz.ratio(example, potential)
                 s_description.append(similarity)
-                mimosa_matching_description.apped(example)
-                plcs_matching_description.append(potential)
 
-    df2 = df.assign(sim_description=s_description, mimosa_description=mimosa_matching_description, plcs_description=plcs_matching_description)
+    df2 = df.assign(sim_description=s_description)
     print('----description done----')
     return df2
 
@@ -254,29 +252,12 @@ def weighting(df3):
     name_weighting = float(user_info["name weighting"])
     description_weighting = float(user_info["description weighting"])
     relationship_weighting = float(user_info["relationship weighting"])
+    threshold = float(user_info["threshold"])
 
     df3["weighted_similarity"] = df3["sim_name"] * name_weighting / 100 + df3["sim_description"] * description_weighting / 100 + df3["sim_relationships"] * relationship_weighting /100
-    df3.to_sql('similarity', con=engine, if_exists='replace', chunksize=1000, index=False)
+    df3 = df3[df3.weighted_similarity >= threshold]
 
-# def weighting(df2):
-#     name_weighting = 80
-#     description_weighting = 20
-#     d_list = []
-#     threshold = 40
-#     df_list = df2['name_plcs'].values.tolist()
-#
-#     if name_weighting + description_weighting == 100:
-#         print(df2)
-#         for row in df2.itertuples():
-#             weighted_sim = (df2['sim_name'] / 100) * name_weighting
-#             weighted_description = (df2['sim_description'] / 100) * description_weighting
-#             weighted_similarity = weighted_sim + weighted_description
-#             d_list.append(weighted_similarity)
-#
-#     print('here')
-#     df3 = df2.assign(weighted_similarity=d_list)
-#     # df5 = df3[(df3[['weighted_similarity']] >= threshold).all(axis=1)]
-#     print(df3)
+    df3.to_sql('similarity', con=engine, if_exists='replace', chunksize=1000, index=False)
 
 
 config_object = createConfig()
