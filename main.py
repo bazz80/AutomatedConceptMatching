@@ -105,7 +105,7 @@ def read_plcs_xml(engine):
             i += 1
 
     # Write name and description to df
-    df_list = {'idPLCS': id_list, 'name': name_list, 'description': description_list, 'relationships': list2}
+    df_list = {'idPLCS': id_list, 'name_plcs': name_list, 'description': description_list, 'relationships': list2}
     plcs_df = pd.DataFrame(df_list)
     plcs_df['relationships'] = plcs_df['relationships'].str.join(', ')
     plcs_df.to_sql('plcs', con=engine, if_exists='replace', chunksize=1000, index=False)
@@ -165,7 +165,7 @@ def name_match(dfm, dfp):
     id_list = []
     unique_id = 0
 
-    plcs_name_list = dfp['name'].values.tolist()
+    plcs_name_list = dfp['name_plcs'].values.tolist()
     mimosa_name_list = dfm['name'].values.tolist()
     for name_compare_plcs in plcs_name_list:
         for name_compare_mimosa in mimosa_name_list:
