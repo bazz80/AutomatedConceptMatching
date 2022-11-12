@@ -1,4 +1,5 @@
 # AutomatedConceptMatching
+AutomatedConceptMatching is a script that automates the comparison of concepts found in the MIMOSA Standard and ISO 10303-239 PLCS Standard. The script delivers the matches score, their description, name and relationships through the use of FuzzyWuzzy, to a database store. The database can be accessed through the provided web interface inside a virtual machine so that users can view, search and interact with the results. 
 
 <h2>Initial Setup and Configuration</h2>
 
