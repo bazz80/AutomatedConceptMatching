@@ -1,6 +1,7 @@
 # AutomatedConceptMatching
 
 **Initial Setup and Configuration**
+
 Import the supplied OVF file into either VMware Workstation/Player or VMware ESXi by following the procedure from VMware:
 VMware Workstation or Player
 https://docs.vmware.com/en/VMware-Workstation-Player-for-Windows/16.0/com.vmware.player.win.using.doc/GUID-DDCBE9C0-0EC9-4D09-8042-18436DA62F7A.html
