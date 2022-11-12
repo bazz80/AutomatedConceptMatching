@@ -48,6 +48,7 @@ relationship weighting = 12
 [SQLSERVERCONFIG]
 
 user = root
+
 password = password1
 
 database = automatedmatching
@@ -56,7 +57,10 @@ database = automatedmatching
 <h3>Threshold and Weighting</h3>
 
 Please ensure you have entered a threshold between 0 and 100. This will determine what the minimum similarity score shown to you will be.
+
 To determine the weighting of the name, description and relationship similarity values please enter a combination of numbers that total 100%.
+
+It is important that the database you enter in the config.ini file is the same database you will be using to connect to the web interface.
 
 
 <h2>Display Results of Matches</h2>
