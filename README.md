@@ -1,6 +1,6 @@
 # AutomatedConceptMatching
 
-<h1>Initial Setup and Configuration</h1>
+<h2>Initial Setup and Configuration</h2>
 
 Import the supplied OVF file into either VMware Workstation/Player or VMware ESXi by following the procedure from VMware:
 <br>VMware Workstation or Player
@@ -29,7 +29,7 @@ Cat config.ini to view current Thresholds and Weighting. SQL Server Configuratio
 <br>password: HELP!plcs22
 
 
-<h1>Display Results of Matches</h1>
+<h2>Display Results of Matches</h2>
 To run a new analysis, drop existing data from the database and repopulate,
 <br>Run:
 <br>python3 main.py
