@@ -3,10 +3,10 @@
 **Initial Setup and Configuration**
 
 Import the supplied OVF file into either VMware Workstation/Player or VMware ESXi by following the procedure from VMware:
-VMware Workstation or Player
-https://docs.vmware.com/en/VMware-Workstation-Player-for-Windows/16.0/com.vmware.player.win.using.doc/GUID-DDCBE9C0-0EC9-4D09-8042-18436DA62F7A.html
-VMware ESXi
-https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.hostclient.doc/GUID-8ABDB2E1-DDBF-40E3-8ED6-DC857783E3E3.html
+<br>VMware Workstation or Player
+<br>https://docs.vmware.com/en/VMware-Workstation-Player-for-Windows/16.0/com.vmware.player.win.using.doc/GUID-DDCBE9C0-0EC9-4D09-8042-18436DA62F7A.html
+<br>VMware ESXi
+<br>https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.hostclient.doc/GUID-8ABDB2E1-DDBF-40E3-8ED6-DC857783E3E3.html
 
 Configure VM network as per your local environment, either in Bridged mode or Nat for VMware Workstation; VMware ESXi configure VM Network to be on one with DHCP.
 
