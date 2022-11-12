@@ -28,6 +28,24 @@ Cat config.ini to view current Thresholds and Weighting. SQL Server Configuratio
 <br>user: matches
 <br>password: HELP!plcs22
 
+<h2>Setup Automated Matching Script<h1>
+The automated matching script is contained in the main.py file. The program contains a config.ini file where you will need to add your SQL server information.
+To generate this, please run the program once. You will then be able to populate the config.ini file with the following options.
+
+[THRESHOLDANDWEIGHTING]
+threshold = 40
+name weighting = 65
+description weighting = 23
+relationship weighting = 12
+
+[SQLSERVERCONFIG]
+user = root
+password = password1
+database = automatedmatching
+
+<h3>Threshold and Weighting<h3>
+Please ensure you have entered a threshold between 0 and 100. This will determine what the minimum similarity score shown to you will be.
+To determine the weighting of the name, description and relationship similarity values please enter a combination of numbers that total 100%.
 
 <h2>Display Results of Matches</h2>
 To run a new analysis, drop existing data from the database and repopulate,
