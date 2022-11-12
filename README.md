@@ -33,7 +33,7 @@ Cat config.ini to view current Thresholds and Weighting. SQL Server Configuratio
 To run a new analysis, drop existing data from the database and repopulate,
 <br>Run:
 <br>python3 main.py
-
+<br>
 For CLI view of Concept Matches,
 <br>Run:
 <br>python3 show_matches.py
