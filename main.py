@@ -119,7 +119,7 @@ def connect_to_db():
     meta = db.MetaData()
     # User information for SQL server is stored in config.ini
     user_info = config_object["SQLSERVERCONFIG"]
-    engine = db.create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
+    engine = db.create_engine("mysql+pymysql://{user}:{pw}@automatedmatchingdb.mysql.database.azure.com/{db}"
                            .format(user=format(user_info["user"]),
                                    pw=format(user_info["password"]),
                                    db=format(user_info["database"])))
@@ -237,8 +237,8 @@ def createConfig():
     }
 
     config_object["SQLSERVERCONFIG"] = {
-        "User": "root",
-        "Password": "alanna1",
+        "User": "matches",
+        "Password": "HELP!plcd22",
         "Database": "automatedmatching"
     }
 
