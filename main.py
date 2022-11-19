@@ -238,7 +238,7 @@ def createConfig():
 
     config_object["SQLSERVERCONFIG"] = {
         "User": "matches",
-        "Password": "HELP!plcd22",
+        "Password": "HELP!plcs22",
         "Database": "automatedmatching"
     }
 

@@ -1,2 +1,13 @@
 pip==21.2.3
 setuptools==57.4.0
+bs4
+sqlalchemy
+BeautifulSoup4
+pandas
+fuzz
+fuzzywuzzy
+configparser
+python-Levenshtein
+pymysql
+html5lib
+lxml
