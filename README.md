@@ -1,36 +1,38 @@
 # AutomatedConceptMatching
-AutomatedConceptMatching is a script that automates the comparison of concepts found in the MIMOSA Standard and ISO 10303-239 PLCS Standard. The script delivers the matches score, their description, name and relationships through the use of FuzzyWuzzy, to a database store. The database can be accessed through the provided web interface inside a virtual machine so that users can view, search and interact with the results. 
+AutomatedConceptMatching is a script that automates the comparison of concepts found in the MIMOSA Standard and ISO 10303-239 PLCS Standard. The script delivers the matches score, their description, name and relationships through the use of FuzzyWuzzy, to a database store. The database can be accessed through the provided web interface hosted in Azure cloud, so that users can view, search and interact with the results. 
 
-<h2>Initial Setup and Configuration</h2>
+<h2>Initial Setup and Configuration for Azure</h2>
+<h3>Azure Database for MySQL flexible server</h3>
+Create an instance of Azure Database for MySQL flexible server in your resource group and preferred region.<br>
 
-Import the supplied OVF file into either VMware Workstation/Player or VMware ESXi by following the procedure from VMware:
-<br>VMware Workstation or Player
-<br>https://docs.vmware.com/en/VMware-Workstation-Player-for-Windows/16.0/com.vmware.player.win.using.doc/GUID-DDCBE9C0-0EC9-4D09-8042-18436DA62F7A.html
-<br>VMware ESXi
-<br>https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.hostclient.doc/GUID-8ABDB2E1-DDBF-40E3-8ED6-DC857783E3E3.html
+Configure credentials during instance creation and take note of these.<br>
+The demo one has the following credentials used:<br>
+Administrator: matches<br>
+Password: HELP!plcs22<br>
+Add any other MySQL Client IP addresses (such as office or home for testing)<br>
+Tick checkbox "Allow public access from any Azure service within Azure to this server"<br>
+<br>
+Once deployed, create a new database of name "automatedmatching"<br>
 
-Configure VM network as per your local environment, either in Bridged mode or Nat for VMware Workstation; VMware ESXi configure VM Network to be on one with DHCP.
-
-Open VM remote console, login with the following credentials:
-<br>User: mimosa
-<br>Passwprd: HELPplcs22
-
-Run ifconfig to find the current IP Address.
-
-SSH using same credentials.
-
-Change directory to:
-<br>/home/mimosa/AutomatedConceptMatching
-
-Cat config.ini to view current Thresholds and Weighting. SQL Server Configuration shouldn't require changing.
-<br>If Thresholds or Weighting need to be changed:
-<br>VIM config.ini and make the required changes.
-<br>mySQL Server credentials:
-<br>user: matches
-<br>password: HELP!plcs22
+<h3>Azure Web App - To run the python code</h3>
+Create new Azure Web App:<br>
+Basics:<br>
+Publish: Code<br>
+Runtime Stack: Python 3.10<br>
+Operating System: Linux<br>
+<br>
+Deployment:<br>
+Configure to be a cloned source of thie Git repository, using the Azure branch<br>
+SSH and edit the main.py or config.ini to include the MySQL credentials and server name<br>
+If there are issues with running the code due to dependencies not installed during deployment, may need to run the following:<br>
+pip install bs4 sqlalchemy BeautifulSoup4 pandas fuzz fuzzywuzzy configparser python-Levenshtein pymysql html5lib lxml<br>
+<br>
+Done. :)<br>
+https://github.com/bazz80/AutomatedConceptMatching_WebApp<br>
+<br>
 
 
-<h2>Setup Automated Matching Script</h1>
+<h2>Setup Automated Matching Script</h2>
 The automated matching script is contained in the main.py file. The program contains a config.ini file where you will need to add your SQL server information.
 To generate this, please run the program once. You will then be able to populate the config.ini file with the following options.
 
@@ -73,4 +75,4 @@ For CLI view of Concept Matches,
 <br>Run:
 <br>python3 show_matches.py
 
-<br>For GUI view, browse to the IP address assigned via DHCP.
+
